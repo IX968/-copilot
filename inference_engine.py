@@ -53,17 +53,21 @@ bootstrap_environment()
 # -----------------------------------------------------------
 
 class InferenceEngine:
-    def __init__(self, model_id="Qwen/Qwen2.5-1.5B-Instruct-GPTQ-Int4"):
+    def __init__(self, model_id="TheMelonGod/Qwen3-1.7B-exl2"):
         self.model_id = model_id
         self.model = None
-        self.generator = None
         self.tokenizer = None
+        self.cache = None
+        self.generator = None
         self.is_ready = False
 
     def load_model(self):
         try:
-            print(f"Resolving model path for {self.model_id}...")
-            model_path = snapshot_download(repo_id=self.model_id)
+            # Download EXL2 Model
+            model_path = snapshot_download(
+                repo_id=self.model_id,
+                revision="6hb-4.0bpw" 
+            )
             print(f"Model found at: {model_path}")
 
             from exllamav2 import (
