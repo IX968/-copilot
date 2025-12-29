@@ -31,12 +31,17 @@ class ContextProvider:
             rect = element.BoundingRectangle
             
             # --- REVERTED TO MOUSE POS (STABLE) ---
-            # The complex caret detection caused issues/crashes.
-            # We revert to solid Mouse positioning for now.
+            # Manual Calibration for "Ghost Text" vs "Mouse Pointer"
+            # DPI Scaling issue is fixed in UI Overlay. 
+            # We keep slight offsets relative to the pointer TIP.
+            OFFSET_X = 15  # Right of pointer
+            OFFSET_Y = 15  # Below pointer tip (standard behavior)
+            
             try:
                 import win32api
-                caret_x, caret_y = win32api.GetCursorPos()
-                caret_x += 10 # Offset
+                mx, my = win32api.GetCursorPos()
+                caret_x = mx + OFFSET_X
+                caret_y = my + OFFSET_Y
                 app_name = f"{app_name} (Mouse)"
             except:
                 caret_x, caret_y = 0, 0

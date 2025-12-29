@@ -54,16 +54,26 @@ class GhostTextOverlay(QWidget):
         self.suggestion_text = text
         self.label.setText(text)
         self.label.adjustSize()
-        
+        self.resize(self.label.size()) # Resize the window to fit the label
+
         if font_size and font_size != self.font_size:
             self.font_size = font_size
             self.qfont.setPointSize(font_size)
             self.label.setFont(self.qfont)
             self.label.adjustSize()
+            self.resize(self.label.size()) # Re-resize if font size changed
 
+        # FIX: Convert Physical Coordinates (from Win32) to Logical (for Qt)
+        # User has High DPI (e.g. 150%), so Qt scales 'move(x,y)' up.
+        # We need to divide by the ratio to counteract this.
+        ratio = self.devicePixelRatio()
+        if ratio == 0: ratio = 1
+        
+        logical_x = int(x / ratio)
+        logical_y = int(y / ratio)
+        
         # Position just slightly to the right of cursor
-        # Note: We might need to adjust Y to align baselines
-        self.move(x + 2, y) 
+        self.move(logical_x, logical_y)
         self.resize(self.label.size())
         self.show()
 
