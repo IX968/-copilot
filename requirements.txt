@@ -1,0 +1,20 @@
+# PyTorch (install separately with CUDA support)
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+
+# ExLlamaV2 Inference Engine
+exllamav2
+
+# Hugging Face
+transformers
+huggingface_hub
+accelerate
+
+# UI Framework
+PyQt6
+
+# Windows Integration
+keyboard
+uiautomation
+pyperclip
+psutil
+pywin32

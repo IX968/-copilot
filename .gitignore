@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model Cache (large files)
+server/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.gguf
+
+# Logs
+*.log
+
+# Temp files
+0.3.10
+80
