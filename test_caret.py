@@ -4,7 +4,7 @@ from ctypes import wintypes
 import uiautomation as auto
 import win32api
 
-# --- Win32 Definitions ---
+# --- Win32 定义 ---
 user32 = ctypes.windll.user32
 class GUITHREADINFO(ctypes.Structure):
     _fields_ = [
@@ -44,27 +44,27 @@ def get_caret_uia():
         element = auto.GetFocusedControl()
         if not element: return 0, 0
         
-        # Try TextPattern (VSCode, Word, Browsers)
+        # 尝试 TextPattern（VSCode、Word、浏览器）
         pattern = element.GetPattern(auto.PatternId.TextPattern)
         if pattern:
             selections = pattern.GetSelection()
             if selections:
-                # Cursor is a degenerate selection
+                # 光标是一个退化的选区
                 rects = selections[0].GetBoundingRectangles()
                 if rects:
-                    # rects is [left, top, width, height, ...]
+                    # rects 是 [left, top, width, height, ...]
                     return int(rects[0] + rects[2]), int(rects[1] + rects[3])
                     
-        # Try ValuePattern (Simple Textboxes)
-        # ValuePattern doesn't give cursor pos directly easily.
+        # 尝试 ValuePattern（简单文本框）
+        # ValuePattern 不直接提供光标位置
     except Exception as e:
         pass
     return 0, 0
 
 def main():
-    print("=== Caret Tracking Diagnostic Tool ===")
-    print("Move focus to different apps (Notepad, VS Code, Browser).")
-    print("Checking every 1 second...\n")
+    print("=== 光标位置诊断工具 ===")
+    print("将焦点移动到不同应用（记事本、VS Code、浏览器）。")
+    print("每 1 秒检查一次...\n")
     
     while True:
         mx, my = win32api.GetCursorPos()

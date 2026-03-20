@@ -8,7 +8,7 @@ class ContextProvider:
 
     def get_focused_context(self):
         """
-        Returns (text_before_caret, caret_x, caret_y, app_name)
+        返回 (光标前文本，caret_x, caret_y, 应用名称)
         """
         try:
             element = auto.GetFocusedControl()
@@ -16,26 +16,26 @@ class ContextProvider:
                 print("No focused element")
                 return None, 0, 0, "Unknown"
 
-            # 1. Get Application Name (Fixing AttributeError)
+            # 1. 获取应用名称（修复 AttributeError）
             try:
                 pid = element.ProcessId
                 import psutil
                 process = psutil.Process(pid)
                 app_name = process.name()
             except ImportError:
-                # Fallback if psutil not installed (though likely is on conda)
+                # 备用方案：如果 psutil 未安装（尽管 conda 上通常已安装）
                 app_name = f"PID:{element.ProcessId}"
             except Exception:
                 app_name = "UnknownApp"
 
             rect = element.BoundingRectangle
             
-            # --- REVERTED TO MOUSE POS (STABLE) ---
-            # Manual Calibration for "Ghost Text" vs "Mouse Pointer"
-            # DPI Scaling issue is fixed in UI Overlay. 
-            # We keep slight offsets relative to the pointer TIP.
-            OFFSET_X = 15  # Right of pointer
-            OFFSET_Y = 15  # Below pointer tip (standard behavior)
+            # --- 回退到鼠标位置（稳定方案） ---
+            # "幽灵文本"与"鼠标指针"的手动校准
+            # DPI 缩放问题已在 UI Overlay 中修复
+            # 我们相对于指针尖端保持轻微偏移
+            OFFSET_X = 15  # 指针右侧
+            OFFSET_Y = 15  # 指针尖端下方（标准行为）
             
             try:
                 import win32api
@@ -46,34 +46,34 @@ class ContextProvider:
             except:
                 caret_x, caret_y = 0, 0
 
-            # 3. Get Context Text (Essential for Copilot) (Essential for Copilot)
-            # Basic implementation: specific to standard Edit controls
+            # 3. 获取上下文文本（Copilot 必备）
+            # 基础实现：针对标准编辑控件
             text_context = ""
             try:
-                # ValuePattern (Standard text boxes)
+                # ValuePattern（标准文本框）
                 value_pattern = element.GetPattern(auto.PatternId.ValuePattern)
                 if value_pattern:
                     text_context = value_pattern.Value
                 else:
-                    # Fallback: Document/Text Pattern
-                    # This can be slow, so we limit length
+                    # 备用方案：文档/文本模式
+                    # 这可能很慢，所以我们限制长度
                     text_pattern = element.GetPattern(auto.PatternId.TextPattern)
                     if text_pattern:
-                        # Get selection or visible range?
-                        # Just getting document range is expensive.
-                        # Optimization: Just assume empty context for non-standard apps for safety first
+                        # 获取选区或可见范围？
+                        # 获取文档范围开销很大
+                        # 优化：为了安全起见，对非标准应用暂时假设为空上下文
                         pass
                     else:
-                        # Fallback: Name (often contains text for simple labels/elements)
+                        # 备用方案：Name 属性（简单标签/元素通常包含文本）
                         text_context = element.Name
             except Exception as e:
-                # print(f"Context fetch warning: {e}")
+                # print(f"上下文获取警告：{e}")
                 pass
 
             return text_context, caret_x, caret_y, app_name
 
         except Exception as e:
-            # print(f"Ctx Error: {e}") # Reduce spam
+            # print(f"上下文错误：{e}") # 减少垃圾日志
             return None, 0, 0, "Error"
 
 if __name__ == "__main__":
