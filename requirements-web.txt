@@ -1,0 +1,16 @@
+# Web API Server
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.6
+
+# 配置文件
+pyyaml>=6.0
+
+# HTTP 客户端（API 调用）
+httpx>=0.26.0
+
+# 可选：Redis 缓存（高性能场景）
+# redis>=5.0.0
+
+# 可选：图表数据生成
+# pandas>=2.0.0

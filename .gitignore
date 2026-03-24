@@ -4,10 +4,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-*.egg-info/
-.eggs/
-dist/
-build/
 
 # Virtual Environment
 venv/
@@ -19,13 +15,14 @@ env/
 .idea/
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
 
 # Model Cache (large files)
-server/
+models/
 *.safetensors
 *.bin
 *.pt
@@ -34,7 +31,13 @@ server/
 
 # Logs
 *.log
+data/logs/
+data/*.db
 
 # Temp files
 0.3.10
 80
+
+# Project specific
+config/config.yaml
+frontend/__pycache__/
