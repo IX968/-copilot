@@ -1,0 +1,10 @@
+{
+  "qwen31.7bbase": {
+    "name": "qwen31.7bbase",
+    "path": "models\\qwen31.7bbase",
+    "size_gb": 3.22,
+    "model_type": "safetensors",
+    "is_loaded": true,
+    "metadata": null
+  }
+}

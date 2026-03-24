@@ -1,0 +1,87 @@
+# Global AI Copilot 配置文件
+# 修改后需重启服务或调用 POST /api/config/reload
+
+# ======================
+# AI 引擎配置
+# ======================
+engine:
+  # 引擎类型：transformer | exllama | api
+  type: transformer
+
+  # 模型路径（本地模型目录或 HuggingFace 模型 ID）
+  model_path: "Qwen/Qwen3-1.7B-Base"
+
+  # API 引擎专用（当 type=api 时）
+  api:
+    base_url: "https://api.openai.com/v1"
+    api_key: ""
+    model_id: "gpt-3.5-turbo"
+
+# ======================
+# 生成参数
+# ======================
+generation:
+  temperature: 0.7      # 创造性 (0.1-2.0)
+  max_tokens: 64        # 最大生成 token 数
+  top_k: 40             # Top-K 采样
+  top_p: 0.9            # Top-P 采样
+  repetition_penalty: 1.1  # 重复惩罚
+
+# ======================
+# 触发设置
+# ======================
+trigger:
+  debounce_ms: 300      # 防抖时间（毫秒），用户停顿后触发
+  accept_key: tab       # 接受补全的按键
+  reject_key: esc       # 拒绝补全的按键
+
+  # 自动触发条件
+  auto_trigger:
+    enabled: true       # 是否启用自动触发
+    min_context_length: 3  # 最小上下文长度
+
+# ======================
+# Web 服务器配置
+# ======================
+server:
+  host: 127.0.0.1
+  port: 7891
+  reload: false         # 开发模式：热重载
+
+# ======================
+# 桌面服务配置
+# ======================
+desktop:
+  enabled: true         # 是否启用桌面补全服务
+  ghost_text:
+    alpha: 0.8          # 透明度 (0.1-1.0)
+    font_size: 14       # 字体大小
+    color: "#aaaaaa"    # 文字颜色
+
+  # 上下文获取
+  context:
+    max_length: 8000    # 最大上下文长度
+    use_mouse_position: true  # 使用鼠标位置（否则尝试 UIA 光标）
+
+# ======================
+# 记忆系统配置
+# ======================
+memory:
+  enabled: true         # 是否启用记忆系统
+  db_path: "data/copilot.db"
+  max_history: 1000     # 最大保留历史记录数
+
+  # 上下文增强
+  context_enhancement:
+    enabled: true
+    max_relevant: 5     # 最多关联的历史记录数
+    similarity_threshold: 0.6  # 相似度阈值
+
+# ======================
+# 日志配置
+# ======================
+logging:
+  level: INFO           # DEBUG | INFO | WARNING | ERROR
+  file: "data/logs/copilot.log"
+  max_size_mb: 10       # 单文件最大大小
+  backup_count: 5       # 保留备份文件数

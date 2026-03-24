@@ -21,8 +21,12 @@ env/
 .DS_Store
 Thumbs.db
 
-# Model Cache (large files)
-models/
+# Model Cache (large weight files only, config/tokenizer files仍追踪)
+models/**/*.safetensors
+models/**/*.bin
+models/**/*.pt
+models/**/*.pth
+models/**/*.gguf
 *.safetensors
 *.bin
 *.pt
@@ -39,5 +43,4 @@ data/*.db
 80
 
 # Project specific
-config/config.yaml
 frontend/__pycache__/
