@@ -4,8 +4,8 @@
 # RTX 30/40 series (Ampere/Ada) can use CUDA 12.4:
 #   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
-# ExLlamaV2 Inference Engine
-exllamav2
+# ExLlamaV2 Inference Engine（可选，需编译，当前引擎未实现）
+# exllamav2
 
 # Hugging Face
 transformers
@@ -21,3 +21,6 @@ uiautomation
 pyperclip
 psutil
 pywin32
+
+# HTTP 客户端（桌面服务调用 API）
+requests

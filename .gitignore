@@ -35,7 +35,7 @@ models/**/*.gguf
 
 # Logs
 *.log
-data/logs/
+data/logs/*.log
 data/*.db
 
 # Temp files
