@@ -38,6 +38,8 @@ class GhostOverlay(QMainWindow):
         self.font_size = font_size
         self.color = color
         self._current_text = ""
+        self._pinned_pos = None   # 首次显示时锁定位置，流式过程不再跟随鼠标
+        self._resize_pending = False  # 防止同帧多次 resize
 
         self._init_ui()
 
@@ -102,31 +104,36 @@ class GhostOverlay(QMainWindow):
 
         # 更新标签文本
         self.label.setText(text)
+
+        # 首次显示：锁定位置（后续流式 token 不再跟随鼠标，避免抖动）
+        if not self.isVisible():
+            from PyQt6.QtGui import QCursor
+            cursor_pos = QCursor.pos()
+            self._pinned_pos = (cursor_pos.x() + 15, cursor_pos.y() + 15)
+            self.show()
+
+        # 将 resize 推迟到下一个事件循环帧，合并同帧内多个 token 的 repaint
+        if not self._resize_pending:
+            self._resize_pending = True
+            QTimer.singleShot(0, self._do_resize)
+
+    def _do_resize(self):
+        """实际执行 resize，由 QTimer 延迟调用以合并同帧多次更新"""
+        self._resize_pending = False
         self.label.adjustSize()
-
-        # 设置大小
-        self.setFixedSize(
-            self.label.width() + 20,
-            self.label.height() + 10
-        )
-
-        # 修复 DPI 缩放带来的坐标越界问题
-        # 与其处理容易出错的物理到逻辑的转换，在 PyQt6 中最稳妥的方式是
-        # 直接拿 Qt 提供的全局逻辑光标位置 QCursor.pos()。
-        # 这样无论跨多少个不同缩放比例和分辨率的屏幕，都能丝滑定位。
-        from PyQt6.QtGui import QCursor
-        cursor_pos = QCursor.pos()
-
-        # 在鼠标右下角偏移15像素显示气泡，以防遮挡鼠标
-        self.move(cursor_pos.x() + 15, cursor_pos.y() + 15)
-
-        # 显示
-        self.show()
+        new_w = self.label.width() + 20
+        new_h = self.label.height() + 10
+        self.setFixedSize(new_w, new_h)
+        # 保持锁定位置不变
+        if self._pinned_pos:
+            self.move(self._pinned_pos[0], self._pinned_pos[1])
 
     def hide_ghost_text(self):
         """隐藏幽灵文本"""
         self.hide()
         self._current_text = ""
+        self._pinned_pos = None   # 下次显示时重新锁定到当前鼠标位置
+        self._resize_pending = False
 
     def get_current_text(self) -> str:
         """获取当前显示的文本"""

@@ -55,22 +55,12 @@ class EngineManager:
                 self._engine = TransformerEngine(model_path)
 
             elif engine_type == "exllama":
-                # 预留 ExLlamaV2 支持
-                # from ..engines.exllama_engine import ExLlamaEngine
-                # self._engine = ExLlamaEngine(model_path)
-                print("[EngineManager] ExLlamaV2 引擎尚未实现，回退到 Transformer")
-                from ..engines.transformer_engine import TransformerEngine
-                self._engine = TransformerEngine(model_path)
-                self._engine_type = "transformer"
+                from ..engines.exllama_engine import ExLlamaV2Engine
+                self._engine = ExLlamaV2Engine(model_path)
 
             elif engine_type == "api":
-                # 预留 API 引擎支持
-                # from ..engines.api_engine import APIEngine
-                # self._engine = APIEngine(model_path)
-                print("[EngineManager] API 引擎尚未实现，回退到 Transformer")
-                from ..engines.transformer_engine import TransformerEngine
-                self._engine = TransformerEngine(model_path)
-                self._engine_type = "transformer"
+                from ..engines.api_engine import APIEngine
+                self._engine = APIEngine(model_path)
 
             else:
                 print(f"[EngineManager] 未知引擎类型：{engine_type}，使用 Transformer")

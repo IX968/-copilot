@@ -2,7 +2,7 @@
 
 **项目名称**: Global AI Copilot
 **最后更新**: 2026-03-25
-**当前阶段**: 流式生成完成 + run.bat 启动修复，准备集成测试
+**当前阶段**: 全面审查完成 — 三引擎模式 + 记忆系统 UI + Bug 修复
 
 ---
 
@@ -130,11 +130,14 @@ global-ai-copilot/
 | **配置系统** | `app/config.py` | ✅ 完成 | YAML 配置加载器，单例模式 |
 | **引擎基类** | `backend/engines/base.py` | ✅ 完成 | BaseEngine 抽象基类 |
 | **Transformer 引擎** | `backend/engines/transformer_engine.py` | ✅ 完成 | HuggingFace 后端 |
+| **ExLlamaV2 引擎** | `backend/engines/exllama_engine.py` | ✅ 完成 | GGUF/EXL2 格式，需安装 exllamav2 库 |
+| **API 引擎** | `backend/engines/api_engine.py` | ✅ 完成 | OpenAI 兼容接口，openai 库 |
+| **引擎切换 API** | `backend/api/routes/engines.py` | ✅ 完成 | POST /api/engines/switch，在线切换无需重启 |
 | **引擎管理器** | `backend/ai_framework/engine_manager.py` | ✅ 完成 | 生命周期管理，单例 |
 | **模型注册表** | `backend/ai_framework/model_registry.py` | ✅ 完成 | 扫描/元数据，单例 |
 | **资源监控** | `backend/ai_framework/resource_monitor.py` | ✅ 完成 | GPU/CPU/内存，已修复预热 |
 | **API 服务器** | `backend/api/server.py` | ✅ 完成 | lifespan 管理，7891 端口 |
-| **API 路由** | `backend/api/routes/*.py` | ✅ 完成 | status/models/generate/config，/generate/stream 真流式 SSE |
+| **API 路由** | `backend/api/routes/*.py` | ✅ 完成 | status/models/generate/config/engines/memory，真流式 SSE |
 | **WebSocket 日志** | `backend/api/websocket/logs.py` | ✅ 完成 | 已修复异步安全 + 防重复 |
 | **记忆系统** | `backend/memory/storage.py` | ✅ 完成 | SQLite 存储 |
 | **上下文构建器** | `backend/memory/context_builder.py` | ✅ 完成 | 历史增强 |
@@ -163,14 +166,14 @@ global-ai-copilot/
 
 | 维度 | 当前 | 目标 | 说明 |
 |------|------|------|------|
-| **核心功能** | 93% | 95% | 补全闭环完成，流式打字机效果已实现 |
-| **Web 控制台** | 85% | 90% | 5 个页面完成，记忆页面待接入后端 |
-| **记忆系统** | 80% | 80% | SQLite + 上下文增强已完成 |
-| **多引擎支持** | 40% | 90% | Transformer 完成，ExLlamaV2/API 待实现 |
-| **代码质量** | 90% | 90% | 二轮审查修复完成，线程安全已处理 |
+| **核心功能** | 95% | 95% | 补全闭环 + 流式打字机效果 + 三引擎切换 |
+| **Web 控制台** | 93% | 95% | 5 页面全部功能实现，记忆系统 UI 已接入 |
+| **记忆系统** | 90% | 90% | SQLite 存储 + REST API + 前端 CRUD/搜索 |
+| **多引擎支持** | 90% | 90% | 三引擎均已实现，控制台在线切换 |
+| **代码质量** | 93% | 95% | 全面审查修复 4 bug + 补全 3 个 stub |
 | **文档完善** | 90% | 95% | README 完整，API 文档自动生成 |
 
-**总体完成度**: **80%**
+**总体完成度**: **92%**
 
 ---
 
@@ -182,8 +185,8 @@ global-ai-copilot/
 | **Web 后端** | FastAPI + Uvicorn | ✅ 已实现 |
 | **Web 前端** | 原生 HTML/JS/CSS | ✅ 已实现 |
 | **推理后端** | Transformers | ✅ 已实现 |
-| **推理后端** | ExLlamaV2 | ⏳ 待开发 |
-| **推理后端** | API (OpenAI 兼容) | ⏳ 待开发 |
+| **推理后端** | ExLlamaV2 | ✅ 已实现（需安装 exllamav2 + GGUF 模型） |
+| **推理后端** | API (OpenAI 兼容) | ✅ 已实现（需 pip install openai） |
 | **UI 框架** | PyQt6 | ✅ 已实现 |
 | **数据库** | SQLite | ✅ 已集成 |
 | **键盘钩子** | keyboard | ✅ 已实现 |
@@ -204,7 +207,7 @@ global-ai-copilot/
 | **创新性** | 全局跨应用 + 本地记忆系统 | ✅ 亮点 |
 | **实用性** | 任意应用补全 | ✅ 已完成 |
 | **完整性** | Web 控制台 + 桌面服务 | ✅ 已完成 |
-| **技术含量** | 多引擎 + 记忆增强 | ⚠️ 90%（缺 ExLlamaV2/API） |
+| **技术含量** | 多引擎 + 记忆增强 | ✅ 三引擎实现，控制台在线切换 |
 | **本地化** | 全中文 + 离线可用 | ✅ 完成 |
 
 ---
@@ -213,6 +216,8 @@ global-ai-copilot/
 
 | 日期 | 变更 | 状态 |
 |------|------|------|
+| 2026-03-25 | 全面审查：修复 4 bug + 记忆系统 UI + 日志导出 + 运行时间 | ✅ |
+| 2026-03-25 | 三引擎模式实现（ExLlamaV2 + 云端 API）+ 控制台在线切换 | ✅ |
 | 2026-03-25 | 流式生成（打字机效果）+ run.bat 启动超时修复 | ✅ |
 | 2026-03-23 | 二轮审查修复 7 个残留问题（asyncio 安全、线程锁、单例等） | ✅ |
 | 2026-03-23 | 一轮审查修复（lifespan、SignalBridge、回调、批量配置等） | ✅ |

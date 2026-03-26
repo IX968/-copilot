@@ -4,10 +4,10 @@ iteration: 1
 session_id: 
 max_iterations: 30
 completion_promise: "LOOP_DONE"
-started_at: "2026-03-23T15:08:57Z"
+started_at: "2026-03-25T16:15:36Z"
 ---
 
-排查文字气泡位置不对或DPI缩放失效的问题，确保在多分辨率和高DPI下在鼠标附近正常展示
+搭建 Python 3.12 conda 环境，安装 CUDA PyTorch + ExLlamaV2，验证 import exllamav2 成功，更新 run.bat 使用新环境
 
 == PUA 行为协议（每次迭代必须遵守）==
 1. 读取项目文件和 git log，了解上次做了什么

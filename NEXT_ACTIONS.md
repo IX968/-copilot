@@ -1,7 +1,7 @@
 # 📋 下一步行动
 
 **最后更新**: 2026-03-25
-**当前阶段**: 流式生成完成，准备集成测试
+**当前阶段**: 全面审查完成，最高优先级：集成测试
 
 ---
 
@@ -19,6 +19,8 @@
 | **二轮修复** | asyncio安全/防重复handler/sys.path/utilization/cpu预热/单例/线程锁 | ✅ 完成 |
 | **流式生成** | TextIteratorStreamer + SSE真流式 + 桌面逐token更新气泡 | ✅ 完成 |
 | **run.bat修复** | API健康检查改为重试循环（最多15秒），不误判慢启动 | ✅ 完成 |
+| **三引擎实现** | ExLlamaV2引擎 + API引擎 + 引擎切换路由 + 控制台切换UI | ✅ 完成 |
+| **全面审查** | 修复4bug（P0路由崩溃+P1假密钥+P1假数据+P2引擎参数）+ 记忆UI + 日志导出 + 运行时间 | ✅ 完成 |
 
 ---
 
@@ -66,15 +68,7 @@ run.bat
 
 删除根目录残留文件：`main_client.py`, `inference_engine.py`, `ui_overlay.py`, `input_hook.py`, `ctx_provider.py`, `run_copilot.bat`, `run_caret_test.bat`, `0.3.10`, `80`, `__pycache__/`
 
-### 5. 实现 ExLlamaV2 引擎
-
-在 `backend/engines/exllama_engine.py` 实现，继承 `BaseEngine`。
-
-### 6. 实现 API 引擎
-
-在 `backend/engines/api_engine.py` 实现 OpenAI 兼容调用。
-
-### 7. 完善记忆系统 UI
+### 5. 完善记忆系统 UI
 
 在 `frontend/js/app.js` 的 `loadMemory()` 中接入 `/api/memory` 接口。
 
@@ -94,9 +88,7 @@ run.bat
 
 - [ ] 集成测试（API + 桌面服务 + run.bat）
 - [ ] 清理旧 MVP 文件
-- [ ] 实现 ExLlamaV2 引擎
-- [ ] 实现 API 引擎
-- [ ] 完善记忆系统 UI
+- [x] 完善记忆系统 UI（接入 /api/memory 接口）
 - [ ] 性能测试脚本
 - [ ] 参赛 PPT
 

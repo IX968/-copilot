@@ -12,6 +12,9 @@ transformers
 huggingface_hub
 accelerate
 
+# 云端 API 引擎（OpenAI 兼容接口）
+openai
+
 # UI Framework
 PyQt6
 

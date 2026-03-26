@@ -22,10 +22,15 @@ async def get_status() -> Dict[str, Any]:
     engine_manager = get_engine_manager()
     resource_monitor = get_resource_monitor()
 
+    from ..server import _server_start_time
+    import time
+    uptime = time.time() - _server_start_time if _server_start_time > 0 else 0
+
     return {
         "api": {
             "status": "ok",
-            "version": "1.0.0"
+            "version": "1.0.0",
+            "uptime_seconds": round(uptime),
         },
         "engine": engine_manager.health_check(),
         "resources": resource_monitor.get_full_status(),
@@ -42,12 +47,13 @@ async def get_gpu_status():
 @router.get("/status/memory")
 async def get_memory_status():
     """获取记忆库统计"""
-    # TODO: 实现记忆系统后返回实际数据
-    return {
-        "enabled": True,
-        "total_interactions": 0,
-        "database_size_mb": 0,
-    }
+    from ...memory.storage import get_memory_storage
+    try:
+        storage = get_memory_storage()
+        stats = storage.get_stats()
+        return {"enabled": True, **stats}
+    except Exception:
+        return {"enabled": False, "total_interactions": 0, "database_size_mb": 0}
 
 
 @router.get("/status/models")

@@ -133,11 +133,32 @@
                     <h3>引擎选择</h3>
                     <div class="form-group">
                         <label for="engineType">引擎类型</label>
-                        <select id="engineType">
-                            <option value="transformer">Transformer</option>
-                            <option value="exllama">ExLlamaV2 (开发中)</option>
-                            <option value="api">云端 API (开发中)</option>
+                        <select id="engineType" onchange="toggleApiConfig()">
+                            <option value="transformer">Transformer (本地 safetensors)</option>
+                            <option value="exllama">ExLlamaV2 (GGUF/EXL2 量化)</option>
+                            <option value="api">云端 API (OpenAI 兼容)</option>
                         </select>
+                    </div>
+
+                    <!-- 云端 API 专用配置，仅在 api 模式下显示 -->
+                    <div id="apiConfigSection" style="display:none;">
+                        <div class="form-group">
+                            <label for="apiBaseUrl">API Base URL</label>
+                            <input type="text" id="apiBaseUrl" placeholder="https://api.openai.com/v1" style="width:100%;padding:6px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);">
+                        </div>
+                        <div class="form-group">
+                            <label for="apiKey">API Key</label>
+                            <input type="password" id="apiKey" placeholder="sk-..." style="width:100%;padding:6px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);">
+                        </div>
+                        <div class="form-group">
+                            <label for="apiModelId">Model ID</label>
+                            <input type="text" id="apiModelId" placeholder="gpt-3.5-turbo" style="width:100%;padding:6px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top:12px;">
+                        <button class="btn btn-primary" onclick="switchEngine()">⚡ 立即切换引擎</button>
+                        <span id="switchStatus" style="margin-left:12px;font-size:0.85em;"></span>
                     </div>
                 </div>
 
@@ -187,9 +208,12 @@
             <section id="page-memory" class="page">
                 <h2>记忆库</h2>
                 <div class="memory-search">
-                    <input type="text" class="search-input" placeholder="搜索记忆...">
-                    <button class="btn btn-primary">🔍 搜索</button>
+                    <input type="text" id="memorySearchInput" class="search-input" placeholder="搜索记忆..." onkeydown="if(event.key==='Enter')searchMemory()">
+                    <button class="btn btn-primary" onclick="searchMemory()">🔍 搜索</button>
+                    <button class="btn btn-secondary" onclick="loadMemory()">🔄 刷新</button>
+                    <button class="btn btn-secondary" onclick="clearMemory()">🗑️ 清空</button>
                 </div>
+                <div id="memoryStats" style="margin:8px 0;font-size:0.85em;color:var(--text-secondary);"></div>
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
@@ -199,11 +223,12 @@
                                 <th>输入</th>
                                 <th>输出</th>
                                 <th>状态</th>
+                                <th>操作</th>
                             </tr>
                         </thead>
                         <tbody id="memoryTableBody">
                             <tr>
-                                <td colspan="5" class="empty-state">记忆功能开发中...</td>
+                                <td colspan="6" class="empty-state">加载中...</td>
                             </tr>
                         </tbody>
                     </table>

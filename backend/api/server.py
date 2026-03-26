@@ -12,7 +12,12 @@ from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
+import time
+
 from app.config import config
+
+# 服务器启动时间（用于计算运行时间）
+_server_start_time: float = 0.0
 
 
 # ======================
@@ -53,16 +58,22 @@ async def lifespan(application: FastAPI):
     mount_static_files(application)
 
     # 导入并注册路由
-    from .routes import status, models, generate, config as config_routes
+    from .routes import status, models, generate, config as config_routes, engines as engines_routes, memory as memory_routes
 
     application.include_router(status.router, prefix="/api", tags=["状态"])
     application.include_router(models.router, prefix="/api/models", tags=["模型"])
     application.include_router(generate.router, prefix="/api", tags=["生成"])
     application.include_router(config_routes.router, prefix="/api", tags=["配置"])
+    application.include_router(engines_routes.router, prefix="/api", tags=["引擎"])
+    application.include_router(memory_routes.router, prefix="/api/memory", tags=["记忆"])
 
     # WebSocket 路由
     from .websocket import logs as logs_ws
     application.include_router(logs_ws.router)
+
+    # 记录启动时间
+    global _server_start_time
+    _server_start_time = time.time()
 
     print("[API Server] 启动完成")
     print(f"[API Server] API 文档：http://{config.get('server', 'host')}:{config.get('server', 'port')}/api/docs")
@@ -122,7 +133,8 @@ async def root():
 @app.get("/api/health")
 async def health_check():
     """API 健康检查"""
-    return {"status": "ok", "version": "1.0.0"}
+    uptime = time.time() - _server_start_time if _server_start_time > 0 else 0
+    return {"status": "ok", "version": "1.0.0", "uptime_seconds": round(uptime)}
 
 
 # ======================

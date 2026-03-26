@@ -325,4 +325,84 @@ def on_key_event(event):
 
 ---
 
+## [2026-03-25] 三引擎模式实现策略
+
+**状态**: ✅ 已执行
+
+### 背景
+项目设计时预留了 ExLlamaV2 和 API 引擎接口，engine_manager.py 中均为注释状态，切换时静默回退到 Transformer。
+
+### 决策
+
+#### 1. 不再静默回退
+ExLlamaV2/API 引擎创建失败时直接返回 `False`，前端显示明确错误信息。原先的静默回退会让用户误以为已切换成功。
+
+#### 2. ExLlamaV2 引擎：ImportError 时返回 False 而不抛出
+```python
+try:
+    from exllamav2 import ...
+except ImportError:
+    print("[ExLlamaV2] 库未安装，请运行: pip install exllamav2")
+    return False
+```
+**理由**: exllamav2 需要 CUDA 工具链编译，不是所有环境都有。优雅降级比崩溃好。
+
+#### 3. API 引擎：使用 openai 库而非 requests 直接 HTTP
+**理由**: openai 库封装了 SSE 流式、重试、认证等细节，且支持所有 OpenAI 兼容接口（DeepSeek、Qwen API 等）。`requests` 手写 SSE 更易出错。
+
+#### 4. 新增 `POST /api/engines/switch` 端点
+**理由**: 引擎切换需要同时更新 config + 切换运行中的引擎实例，是原子操作。现有的 `/api/config/batch` 只写配置，不触发引擎切换。独立端点职责更清晰。
+
+#### 5. 前端：API 配置区条件显示
+选"云端 API"时才显示 base_url/api_key/model_id 输入框；切换按钮独立于"保存配置"按钮。
+**理由**: api_key 等字段只对 API 引擎有意义，避免混淆。
+
+### 改动文件
+| 文件 | 操作 |
+|------|------|
+| `backend/engines/api_engine.py` | 新建 |
+| `backend/engines/exllama_engine.py` | 新建 |
+| `backend/api/routes/engines.py` | 新建 |
+| `backend/ai_framework/engine_manager.py` | 修改：启用真实引擎 |
+| `backend/api/server.py` | 修改：注册 engines 路由 |
+| `frontend/index.html` | 修改：API 配置区 + 切换按钮 |
+| `frontend/js/app.js` | 修改：toggleApiConfig/switchEngine |
+| `requirements.txt` | 修改：添加 openai |
+
+---
+
+## [2026-03-25] 全面代码审查与修复
+
+**状态**: ✅ 已执行
+
+### 背景
+三引擎模式实现后，进行全面代码审查，发现 4 个 bug 和 3 个未实装的前端功能。
+
+### Bug 修复
+
+| Bug | 文件 | 严重度 | 修复 |
+|-----|------|--------|------|
+| `routes/__init__.py` 缺少 engines 导入 | `__init__.py` | P0 崩溃 | 添加 `from . import engines` + `memory` |
+| API 引擎 `sk-placeholder` 假密钥 | `api_engine.py:35` | P1 | 移除假密钥，空值时打印警告 |
+| `/api/status/memory` 返回硬编码数据 | `status.py:45` | P1 | 接入 `MemoryStorage.get_stats()` |
+| `loadModel()` 不传 `engine_type` | `app.js:376` | P2 | 读取 `#engineType` 选择器值传递 |
+
+### 未实装功能补全
+
+| 功能 | 修改 |
+|------|------|
+| 记忆系统 REST API | 新建 `backend/api/routes/memory.py`，5 个端点 |
+| 记忆库前端 UI | 重写 `loadMemory/searchMemory/deleteMemory/clearMemory` |
+| 日志导出 | `exportLogs()` 从 alert 改为 Blob 文本下载 |
+| 服务运行时间 | server.py 记录 `_server_start_time`，`/api/status` 返回 `uptime_seconds`，前端格式化显示 |
+
+### 决策：不做的事项
+- 模型下载/上传：工程量大，与参赛无关
+- 使用统计图表：需时序数据采集基础设施
+- 语义相似度搜索：需嵌入模型，启发式实现已够用
+- AI 模型特征提取：同上
+- config.set() 防御性检查：当前代码路径不会触发
+
+---
+
 *新增决策请追加到此文件末尾*

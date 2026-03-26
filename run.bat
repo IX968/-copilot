@@ -19,10 +19,10 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-REM Activate Conda env
-call conda activate copilot 2>nul
+REM Activate Conda env (pytorch_python11 has CUDA torch + exllamav3)
+call conda activate pytorch_python11 2>nul
 if %errorlevel% neq 0 (
-    echo [WARN] Conda env 'copilot' not found, using current Python.
+    echo [WARN] Conda env 'pytorch_python11' not found, using current Python.
 )
 
 REM Check dependencies
@@ -39,11 +39,16 @@ echo   Starting Services
 echo ========================================
 echo.
 
-REM Step 1: Start API server (background)
-echo [1/2] Starting API server (port 7891)...
-start "AI Copilot API" python -m uvicorn backend.api.server:app --host 127.0.0.1 --port 7891 --log-level info
+REM Kill any leftover process on port 7891 before starting
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":7891 " ^| findstr "LISTENING"') do (
+    taskkill /PID %%a /F >nul 2>nul
+)
 
-REM 等待 API server 就绪（最多 15 秒，每秒重试一次）
+REM Step 1: Start API server (background, /k keeps window open on crash)
+echo [1/2] Starting API server (port 7891)...
+start "AI Copilot API" cmd /k "python -m uvicorn backend.api.server:app --host 127.0.0.1 --port 7891 --log-level info"
+
+REM Wait for API server ready (max 15s, retry every second)
 echo [WAIT] Waiting for API server...
 set RETRY=0
 :WAIT_LOOP
