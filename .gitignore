@@ -44,6 +44,7 @@ data/*.db
 
 # Claude Code (AI assistant workspace files)
 .claude/
+AI_RULES.md
 DECISIONS.md
 NEXT_ACTIONS.md
 PROJECT_STATUS.md
