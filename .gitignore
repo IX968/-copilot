@@ -42,5 +42,11 @@ data/*.db
 0.3.10
 80
 
+# Claude Code (AI assistant workspace files)
+.claude/
+DECISIONS.md
+NEXT_ACTIONS.md
+PROJECT_STATUS.md
+
 # Project specific
 frontend/__pycache__/
