@@ -18,6 +18,8 @@ class ExLlamaV2Engine(BaseEngine):
     model_path 需指向含模型权重的目录。
     """
 
+    MAX_CACHE_TOKENS = 4096  # cache 总容量
+
     def __init__(self, model_path: str):
         super().__init__(model_path)
         self._model = None
@@ -39,9 +41,9 @@ class ExLlamaV2Engine(BaseEngine):
         try:
             self._config = Config.from_directory(self.model_path)
             self._model = Model.from_config(self._config)
+            self._cache = Cache(self._model, max_num_tokens=4096)  # 必须在 load() 前创建，使 alloc() 能在加载时触发
             self._model.load()
             self._tokenizer = Tokenizer.from_config(self._config)
-            self._cache = Cache(self._model)
             self._generator = Generator(
                 model=self._model,
                 cache=self._cache,
@@ -55,12 +57,19 @@ class ExLlamaV2Engine(BaseEngine):
             return False
 
     def unload_model(self):
-        self._model = None
-        self._cache = None
-        self._tokenizer = None
+        del self._generator, self._cache, self._model, self._tokenizer, self._config
         self._generator = None
+        self._cache = None
+        self._model = None
+        self._tokenizer = None
         self._config = None
         self._is_ready = False
+
+        import gc, torch
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        print("[ExLlamaV3] 模型已卸载")
 
     def generate(self, request: GenerationRequest) -> GenerationResult:
         if not self._is_ready or self._generator is None:
@@ -72,6 +81,11 @@ class ExLlamaV2Engine(BaseEngine):
 
             context = self.validate_context(request.context)
             input_ids = self._tokenizer.encode(context)
+
+            # 截断到 cache 容量，保留最近的上下文，留空间给输出
+            max_input = self.MAX_CACHE_TOKENS - request.max_tokens
+            if input_ids.shape[-1] > max_input:
+                input_ids = input_ids[:, -max_input:]
 
             sampler = ComboSampler(
                 temperature=request.temperature,
@@ -118,6 +132,11 @@ class ExLlamaV2Engine(BaseEngine):
 
             context = self.validate_context(request.context)
             input_ids = self._tokenizer.encode(context)
+
+            # 截断到 cache 容量，保留最近的上下文，留空间给输出
+            max_input = self.MAX_CACHE_TOKENS - request.max_tokens
+            if input_ids.shape[-1] > max_input:
+                input_ids = input_ids[:, -max_input:]
 
             sampler = ComboSampler(
                 temperature=request.temperature,

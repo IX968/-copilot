@@ -163,6 +163,18 @@
                 </div>
 
                 <div class="settings-section">
+                    <h3>提示词模式</h3>
+                    <div class="form-group">
+                        <label for="promptMode">补全场景</label>
+                        <select id="promptMode" onchange="switchPromptMode()">
+                            <option value="code">💻 代码补全</option>
+                            <option value="writing">📝 文档 / 论文写作</option>
+                        </select>
+                    </div>
+                    <div id="promptModeStatus" style="margin-top:8px;font-size:0.85em;"></div>
+                </div>
+
+                <div class="settings-section">
                     <h3>生成参数</h3>
                     <div class="form-group">
                         <label for="temperature">Temperature: <span id="temperatureValue">0.7</span></label>

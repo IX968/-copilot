@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 初始化滑块值显示
     initSliders();
 
+    // 加载提示词模式
+    loadPromptMode();
+
     console.log('[App] 初始化完成');
 });
 
@@ -483,6 +486,47 @@ async function switchEngine() {
         statusEl.textContent = '✗ 请求失败';
         statusEl.style.color = 'var(--error, #ef4444)';
         addLogEntry('[引擎] 切换请求失败: ' + e.message, 'error');
+    }
+}
+
+// ======================
+// 提示词模式
+// ======================
+
+async function loadPromptMode() {
+    try {
+        const res = await fetch('/api/prompt/modes');
+        const data = await res.json();
+        const sel = document.getElementById('promptMode');
+        if (sel) sel.value = data.current;
+    } catch (e) {
+        console.error('[PromptMode] 加载失败:', e);
+    }
+}
+
+async function switchPromptMode() {
+    const mode = document.getElementById('promptMode').value;
+    const statusEl = document.getElementById('promptModeStatus');
+
+    try {
+        const res = await fetch('/api/prompt/mode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode }),
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            statusEl.textContent = '✓ 已切换到：' + data.name;
+            statusEl.style.color = 'var(--success)';
+            addLogEntry(`[提示词] 切换到 ${data.name}`, 'success');
+        } else {
+            statusEl.textContent = '✗ ' + data.error;
+            statusEl.style.color = 'var(--error, #ef4444)';
+        }
+    } catch (e) {
+        statusEl.textContent = '✗ 请求失败';
+        statusEl.style.color = 'var(--error, #ef4444)';
     }
 }
 

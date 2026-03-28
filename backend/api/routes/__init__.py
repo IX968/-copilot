@@ -7,5 +7,6 @@ from . import generate
 from . import config
 from . import engines
 from . import memory
+from . import prompt
 
-__all__ = ['status', 'models', 'generate', 'config', 'engines', 'memory']
+__all__ = ['status', 'models', 'generate', 'config', 'engines', 'memory', 'prompt']

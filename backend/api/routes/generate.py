@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 
 from ...ai_framework.engine_manager import get_engine_manager
+from ...ai_framework.prompt_manager import get_prompt_manager
 from ...engines.base import GenerationRequest
 
 router = APIRouter()
@@ -50,9 +51,11 @@ async def generate(request: GenerateRequest):
             detail="引擎未就绪，请先加载模型"
         )
 
-    # 构建生成请求
+    # 用当前提示词模板包装上下文
+    wrapped_context = get_prompt_manager().wrap_context(request.context)
+
     gen_request = GenerationRequest(
-        context=request.context,
+        context=wrapped_context,
         max_tokens=request.max_tokens,
         temperature=request.temperature,
         top_k=request.top_k,
@@ -60,7 +63,7 @@ async def generate(request: GenerateRequest):
         repetition_penalty=request.repetition_penalty,
     )
 
-    # 执行生成
+    # 执行��成
     result = engine_manager.generate(gen_request)
 
     if not result.success:
@@ -97,8 +100,10 @@ async def generate_stream(request: GenerateRequest):
             detail="引擎未就绪，请先加载模型"
         )
 
+    wrapped_context = get_prompt_manager().wrap_context(request.context)
+
     gen_request = GenerationRequest(
-        context=request.context,
+        context=wrapped_context,
         max_tokens=request.max_tokens,
         temperature=request.temperature,
         top_k=request.top_k,

@@ -58,7 +58,7 @@ async def lifespan(application: FastAPI):
     mount_static_files(application)
 
     # 导入并注册路由
-    from .routes import status, models, generate, config as config_routes, engines as engines_routes, memory as memory_routes
+    from .routes import status, models, generate, config as config_routes, engines as engines_routes, memory as memory_routes, prompt as prompt_routes
 
     application.include_router(status.router, prefix="/api", tags=["状态"])
     application.include_router(models.router, prefix="/api/models", tags=["模型"])
@@ -66,6 +66,7 @@ async def lifespan(application: FastAPI):
     application.include_router(config_routes.router, prefix="/api", tags=["配置"])
     application.include_router(engines_routes.router, prefix="/api", tags=["引擎"])
     application.include_router(memory_routes.router, prefix="/api/memory", tags=["记忆"])
+    application.include_router(prompt_routes.router, prefix="/api", tags=["提示词"])
 
     # WebSocket 路由
     from .websocket import logs as logs_ws

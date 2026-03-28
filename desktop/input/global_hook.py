@@ -25,6 +25,7 @@ class InputHook:
         on_trigger: Optional[Callable] = None,
         on_accept: Optional[Callable] = None,
         on_reject: Optional[Callable] = None,
+        has_pending: Optional[Callable] = None,
         debounce_ms: int = None
     ):
         """
@@ -34,11 +35,13 @@ class InputHook:
             on_trigger: 防抖后触发补全的回调
             on_accept: 接受补全的回调
             on_reject: 拒绝补全的回调
+            has_pending: 查询是否有待处理补全的回调（用于条件性拦截 Tab）
             debounce_ms: 防抖时间（毫秒），默认从配置读取
         """
         self.on_trigger = on_trigger
         self.on_accept = on_accept
         self.on_reject = on_reject
+        self.has_pending = has_pending
         self.debounce_ms = debounce_ms or config.get('trigger', 'debounce_ms', default=300)
         self.accept_key = config.get('trigger', 'accept_key', default='tab')
         self.reject_key = config.get('trigger', 'reject_key', default='esc')
@@ -58,8 +61,8 @@ class InputHook:
         # 监听所有按键
         keyboard.hook(self._on_key_event, suppress=False)
 
-        # 监听接受键（Tab）
-        keyboard.on_press_key(self.accept_key, self._on_accept_key, suppress=False)
+        # 监听接受键（Tab）— suppress=True 拦截按键，回调内决定是消耗还是放行
+        keyboard.on_press_key(self.accept_key, self._on_accept_key, suppress=True)
 
         # 监听拒绝键（Esc）
         keyboard.on_press_key(self.reject_key, self._on_reject_key, suppress=False)
@@ -123,10 +126,14 @@ class InputHook:
         """
         接受补全键（Tab）
 
-        Args:
-            event: 键盘事件
+        suppress=True 下，返回 False 拦截按键，返回 True 放行到应用。
+        仅当有待处理补全时拦截 Tab 并执行接受，否则原样放行。
         """
-        # 取消待处理的触发
+        # 无待处理补全 → 放行 Tab 到应用（正常 Tab 行为）
+        if not (self.has_pending and self.has_pending()):
+            return True
+
+        # 有待处理补全 → 拦截 Tab，执行接受
         if self._debounce_timer:
             self._debounce_timer.cancel()
             self._debounce_timer = None
@@ -138,6 +145,8 @@ class InputHook:
                 self.on_accept()
             except Exception as e:
                 print(f"[InputHook] 接受回调失败：{e}")
+
+        return False  # 拦截 Tab，不让它到达应用
 
     def _on_reject_key(self, event):
         """

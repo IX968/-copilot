@@ -4,6 +4,22 @@
     "path": "models\\qwen31.7bbase",
     "size_gb": 3.22,
     "model_type": "safetensors",
+    "is_loaded": true,
+    "metadata": null
+  },
+  "Qwen3-1.7B-8.0bpw-exl2": {
+    "name": "Qwen3-1.7B-8.0bpw-exl2",
+    "path": "models\\Qwen3-1.7B-8.0bpw-exl2",
+    "size_gb": 2.2,
+    "model_type": "safetensors",
+    "is_loaded": false,
+    "metadata": null
+  },
+  "Qwen3-1.7B-exl2": {
+    "name": "Qwen3-1.7B-exl2",
+    "path": "models\\Qwen3-1.7B-exl2",
+    "size_gb": 1.48,
+    "model_type": "safetensors",
     "is_loaded": false,
     "metadata": null
   }

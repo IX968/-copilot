@@ -13,7 +13,7 @@ engine:
     base_url: https://api.deepseek.com/v1
     model_id: deepseek-chat
   model_path: Qwen/Qwen3-1.7B-Base
-  type: exllama
+  type: transformer
 generation:
   max_tokens: 64
   repetition_penalty: 1.1

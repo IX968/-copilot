@@ -101,6 +101,12 @@ class EngineManager:
         if self._engine is not None:
             self._engine.unload_model()
             self._engine = None
+
+            import gc, torch
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
             print("[EngineManager] 引擎已卸载")
 
     def generate(self, request: GenerationRequest) -> GenerationResult:

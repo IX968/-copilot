@@ -89,6 +89,7 @@ class DesktopService:
             on_trigger=self._on_trigger_completion,
             on_accept=self.accept_completion,
             on_reject=self.reject_completion,
+            has_pending=lambda: self._pending_completion is not None,
         )
 
         print("[DesktopService] 初始化完成")
@@ -131,9 +132,7 @@ class DesktopService:
         thread.start()
 
     def _fetch_completion(self):
-        """后台获取流式补全，逐 token 更新气泡"""
-        import json
-
+        """后台获取补全（一次性），完成后显示气泡"""
         try:
             # 获取上下文
             context, caret_x, caret_y, app_name = self.ctx_provider.get_context_with_limit(
@@ -146,9 +145,9 @@ class DesktopService:
 
             self._completion_context = context
 
-            # 调用流式 API
+            # 调用一次性生成 API
             response = requests.post(
-                f"{self.api_url}/api/generate/stream",
+                f"{self.api_url}/api/generate",
                 json={
                     "context": context,
                     "max_tokens": config.get('generation', 'max_tokens', default=64),
@@ -156,52 +155,27 @@ class DesktopService:
                     "top_k": config.get('generation', 'top_k', default=40),
                     "top_p": config.get('generation', 'top_p', default=0.9),
                 },
-                stream=True,
-                timeout=30
+                timeout=(5, 120),
             )
 
             if response.status_code != 200:
                 print(f"[DesktopService] API 错误：{response.status_code}")
                 return
 
-            accumulated = ""
+            data = response.json()
+            text = data.get("text", "")
+            if not text:
+                return
 
-            # 逐行读取 SSE 数据
-            for raw_line in response.iter_lines():
-                if not raw_line:
-                    continue
+            tokens = data.get("tokens_generated", 0)
+            t = data.get("inference_time", 0)
+            tps = data.get("tokens_per_second", 0)
+            print(f"[DesktopService] 补全完成：{tokens} tokens, {t:.2f}s, {tps:.1f} t/s | {text[:60]}")
 
-                line = raw_line.decode('utf-8') if isinstance(raw_line, bytes) else raw_line
-                if not line.startswith("data: "):
-                    continue
+            with self._lock:
+                self._pending_completion = text
 
-                try:
-                    data = json.loads(line[6:])
-                except json.JSONDecodeError:
-                    continue
-
-                if data.get("done"):
-                    break
-
-                if "error" in data:
-                    print(f"[DesktopService] 流式错误：{data['error']}")
-                    break
-
-                token = data.get("token", "")
-                if not token:
-                    continue
-
-                accumulated += token
-                print(f"[DesktopService] token: {repr(token)}")
-
-                # 线程安全地更新待处理补全，并立即刷新气泡
-                with self._lock:
-                    self._pending_completion = accumulated
-
-                self._signal_bridge.show_ghost.emit(accumulated, caret_x, caret_y)
-
-            if accumulated:
-                print(f"[DesktopService] 流式补全完成：{accumulated[:50]}...")
+            self._signal_bridge.show_ghost.emit(text, caret_x, caret_y)
 
         except requests.exceptions.RequestException as e:
             print(f"[DesktopService] API 调用失败：{e}")
