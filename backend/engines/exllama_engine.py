@@ -39,7 +39,18 @@ class ExLlamaV2Engine(BaseEngine):
             return False
 
         try:
-            self._config = Config.from_directory(self.model_path)
+            # 如果路径不存在，尝试当作 HuggingFace 模型 ID 解析到本地缓存
+            from pathlib import Path
+            model_dir = self.model_path
+            if not Path(model_dir).is_dir():
+                try:
+                    from huggingface_hub import snapshot_download
+                    model_dir = snapshot_download(self.model_path)
+                    print(f"[ExLlamaV3] HF 模型解析到: {model_dir}")
+                except Exception:
+                    pass  # 保持原路径，让下面报出清晰错误
+
+            self._config = Config.from_directory(model_dir)
             self._model = Model.from_config(self._config)
             self._cache = Cache(self._model, max_num_tokens=4096)  # 必须在 load() 前创建，使 alloc() 能在加载时触发
             self._model.load()
