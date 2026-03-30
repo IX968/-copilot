@@ -187,13 +187,13 @@ async function refreshStatus() {
         // 更新 GPU 状态
         if (status.resources?.gpu?.available) {
             const gpu = status.resources.gpu;
-            document.getElementById('gpuUsage').textContent = `${gpu.usage_percent || 0}%`;
+            document.getElementById('gpuUsage').textContent = `${gpu.memory_used_percent || 0}%`;
             document.getElementById('gpuMemory').textContent =
                 `显存：${gpu.memory_allocated_gb || 0} / ${gpu.memory_total_gb || 0} GB`;
         }
 
         // 更新模型状态
-        const loadedModel = status.engine?.model_info?.model_path || '--';
+        const loadedModel = status.engine?.model_path || '--';
         document.getElementById('loadedModel').textContent = loadedModel.split('/').pop() || loadedModel;
         document.getElementById('modelType').textContent = status.engine?.engine_type || '--';
 

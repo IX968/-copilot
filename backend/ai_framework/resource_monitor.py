@@ -48,18 +48,24 @@ class ResourceMonitor:
             }
 
         try:
-            # 显存使用情况
-            allocated = torch.cuda.memory_allocated(0)
-            reserved = torch.cuda.memory_reserved(0)
+            # mem_get_info 返回 (free, total)，比 init 时缓存的 total_memory 更可靠
+            free_bytes, total_bytes = torch.cuda.mem_get_info(0)
+            used_bytes = total_bytes - free_bytes
+
+            usage_percent = 0
+            if hasattr(torch.cuda, 'utilization'):
+                try:
+                    usage_percent = torch.cuda.utilization(0)
+                except Exception:
+                    pass
 
             return {
                 "available": True,
                 "name": self._gpu_name,
-                "usage_percent": torch.cuda.utilization(0) if hasattr(torch.cuda, 'utilization') else 0,
-                "memory_allocated_gb": round(allocated / (1024 ** 3), 2),
-                "memory_reserved_gb": round(reserved / (1024 ** 3), 2),
-                "memory_total_gb": round(self._gpu_total_memory / (1024 ** 3), 2),
-                "memory_used_percent": round(allocated / self._gpu_total_memory * 100, 1) if self._gpu_total_memory > 0 else 0,
+                "usage_percent": usage_percent,
+                "memory_allocated_gb": round(used_bytes / (1024 ** 3), 2),
+                "memory_total_gb": round(total_bytes / (1024 ** 3), 2),
+                "memory_used_percent": round(used_bytes / total_bytes * 100, 1) if total_bytes > 0 else 0,
             }
         except Exception as e:
             return {
